@@ -1,5 +1,7 @@
 package AridRayne.DreamStream;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 import android.os.Handler;
@@ -10,12 +12,7 @@ import com.squareup.picasso.Picasso;
 
 public class DreamStreamService extends DreamService {
 	ImageView iv;
-	String images[] = { "http://www.simonebeautytherapy.co.za/wp-content/uploads/2013/09/placeholder2.jpg",
-						"http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg",
-						"http://www.zwaldtransport.com/images/placeholders/placeholder1.jpg",
-						"http://taimapedia.org/images/5/5f/Placeholder.jpg",
-						"http://wp.tx.ncsu.edu/fashioning-health/wp-content/uploads/2012/02/placeholder.jpg"
-	};
+	Queue<String> images = new LinkedList<String>();
 	Random randomizer;
 	int repeatTime = 5000;
 	Handler imageHandler;
@@ -33,6 +30,11 @@ public class DreamStreamService extends DreamService {
 		Picasso.with(this).setDebugging(true);
 		randomizer = new Random();
 		imageHandler = new Handler();
+		images.add("http://www.simonebeautytherapy.co.za/wp-content/uploads/2013/09/placeholder2.jpg");
+		images.add("http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg");
+		images.add("http://www.zwaldtransport.com/images/placeholders/placeholder1.jpg");
+		images.add("http://taimapedia.org/images/5/5f/Placeholder.jpg");
+		images.add("http://wp.tx.ncsu.edu/fashioning-health/wp-content/uploads/2012/02/placeholder.jpg");
 	}
 
 	@Override
@@ -44,12 +46,7 @@ public class DreamStreamService extends DreamService {
 	Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
-			if (random)
-				position = randomizer.nextInt(images.length);
-			loadImage(images[position]);
-			position++;
-			if (position >= images.length)
-				position = 0;
+			loadImage(images.poll());
 			imageHandler.postDelayed(imageLoader, repeatTime);
 		}
 	};
@@ -61,6 +58,8 @@ public class DreamStreamService extends DreamService {
 	}
 
 	public void loadImage(String imageUrl) {
+		if (imageUrl == null)
+			return;
 		Picasso.with(this)
 		.load(imageUrl)
 		.centerInside()
