@@ -1,9 +1,15 @@
-package AridRayne.DreamStream;
+package com.AridRayne.DreamStream;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+import org.mcsoxford.rss.RSSFeed;
+import org.mcsoxford.rss.RSSItem;
+import org.mcsoxford.rss.RSSReader;
+import org.mcsoxford.rss.RSSReaderException;
+
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.service.dreams.DreamService;
 import android.widget.ImageView;
@@ -18,6 +24,8 @@ public class DreamStreamService extends DreamService {
 	Handler imageHandler;
 	int position = 0;
 	Boolean random = false;
+	RSSReader reader;
+	RSSFeed feed;
 	
 	@Override
 	public void onAttachedToWindow() {
@@ -30,11 +38,10 @@ public class DreamStreamService extends DreamService {
 		Picasso.with(this).setDebugging(true);
 		randomizer = new Random();
 		imageHandler = new Handler();
-		images.add("http://www.simonebeautytherapy.co.za/wp-content/uploads/2013/09/placeholder2.jpg");
-		images.add("http://terryshoemaker.files.wordpress.com/2013/03/placeholder1.jpg");
-		images.add("http://www.zwaldtransport.com/images/placeholders/placeholder1.jpg");
-		images.add("http://taimapedia.org/images/5/5f/Placeholder.jpg");
-		images.add("http://wp.tx.ncsu.edu/fashioning-health/wp-content/uploads/2012/02/placeholder.jpg");
+		
+		ReadFeed rf = new ReadFeed();
+		rf.execute("http://backend.deviantart.com/rss.xml?q=boost%3Apopular+in%3Adigitalart+max_age%3A24h&type=deviation");
+		
 	}
 
 	@Override
@@ -65,5 +72,28 @@ public class DreamStreamService extends DreamService {
 		.centerInside()
 		.fit()
 		.into(iv);
+	}
+	
+	public class ReadFeed extends AsyncTask<String, Void, RSSFeed> {
+
+		@Override
+		protected RSSFeed doInBackground(String... urls) {
+			RSSReader reader = new RSSReader();
+			try {
+				return reader.load(urls[0]);
+			} catch (RSSReaderException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(RSSFeed result) {
+			feed = result;
+			for (RSSItem item : result.getItems()) {
+				images.add(item.getMediaContent().getUrl().toString());
+			}
+			super.onPostExecute(result);
+		}
 	}
 }
