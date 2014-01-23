@@ -41,7 +41,7 @@ public class DreamStreamService extends DreamService {
 		Picasso.with(this).setDebugging(true);
 		randomizer = new Random();
 		imageHandler = new Handler();
-		
+		//TODO: Add some code for an initial image?
 	}
 
 	@Override
