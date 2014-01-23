@@ -15,14 +15,16 @@ import org.mcsoxford.rss.RSSReader;
 import android.os.Handler;
 import android.service.dreams.DreamService;
 import android.view.GestureDetector;
+import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-public class DreamStreamService extends DreamService implements OnGestureListener {
+public class DreamStreamService extends DreamService implements OnGestureListener, OnDoubleTapListener {
 	ImageView iv;
 //	Queue<String> images = new LinkedList<String>();
 	ArrayList<String> images = new ArrayList<String>();
@@ -33,12 +35,18 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 	Boolean random = true;
 	RSSReader reader;
 	RSSFeed feed;
+	ScaleGestureDetector sgDetector;
 	GestureDetector gDetector;
+	String splashImage = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
+	Boolean showSplash = true;
+	Boolean pause = false;
 	
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent event) {
-		gDetector.onTouchEvent(event);
-		return super.dispatchTouchEvent(event);
+		Boolean retVal;
+//		Boolean retVal = sgDetector.onTouchEvent(event);
+		retVal = gDetector.onTouchEvent(event);// || retVal;
+		return super.dispatchTouchEvent(event) || retVal;
 	}
 
 	@Override
@@ -48,17 +56,20 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 		setInteractive(true);
 		setFullscreen(true);
 		iv = new ImageView(this);
+		gDetector = new GestureDetector(this, this);
+//		sgDetector = new ScaleGestureDetector(this, this);
+//		iv.setScaleType(ImageView.ScaleType.MATRIX);
 		setContentView(iv);
 		Picasso.with(this).setDebugging(true);
 		randomizer = new Random();
 		imageHandler = new Handler();
-		gDetector = new GestureDetector(this);
 		//TODO: Add some code for an initial image?
 	}
 
 	@Override
 	public void onDreamingStarted() {
 		super.onDreamingStarted();
+		imageLoader.run();
 		RSSLoader loader = RSSLoader.fifo();
 		Future<RSSFeed> future;
 		RSSFeed feed;
@@ -83,13 +94,17 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 		}
 		if (random)
 			Collections.shuffle(images);
-		imageLoader.run();
 	}
 
 	Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
-			loadImage(images.get(position));
+			if (showSplash) {
+				showSplash = false;
+				loadImage(splashImage);
+			}
+			else
+				loadImage(images.get(position));
 		}
 	};
 	
@@ -118,15 +133,15 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 		if (imageUrl.startsWith("file|")) {
 			Picasso.with(this)
 			.load(new File(imageUrl))
-			.centerInside()
-			.fit()
+//			.centerInside()
+//			.fit()
 			.into(iv, new ImageCallback());
 		}
 		else {
 			Picasso.with(this)
 			.load(imageUrl)
-			.centerInside()
-			.fit()
+//			.centerInside()
+//			.fit()
 			.into(iv, new ImageCallback());
 		}
 	}
@@ -137,7 +152,8 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 		public void onSuccess() {
 			incrementPosition();
 			imageHandler.removeCallbacksAndMessages(null);
-			imageHandler.postDelayed(imageLoader, repeatTime);
+			if (!pause)
+				imageHandler.postDelayed(imageLoader, repeatTime);
 		}
 
 		@Override
@@ -160,16 +176,14 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 		if (start.getRawX() < finish.getRawX()) {//Swipe left -> right
 			decrementPosition();
 			decrementPosition();
-			System.out.println("swipe left -> right! " + position);
 			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.post(imageLoader);
 		}
 		else if (start.getRawX() > finish.getRawX()) {//Swipe right -> left
-			System.out.println("swipe right -> left! " + position);
 			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.post(imageLoader);
 		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -193,6 +207,29 @@ public class DreamStreamService extends DreamService implements OnGestureListene
 
 	@Override
 	public boolean onSingleTapUp(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+
+	@Override
+	public boolean onDoubleTap(MotionEvent e) {
+		pause = !pause;
+		if (pause)
+			imageHandler.removeCallbacksAndMessages(null);
+		else
+			imageHandler.post(imageLoader);			
+		return true;
+	}
+
+	@Override
+	public boolean onDoubleTapEvent(MotionEvent e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onSingleTapConfirmed(MotionEvent e) {
 		// TODO Auto-generated method stub
 		return false;
 	}
