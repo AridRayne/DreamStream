@@ -2,6 +2,7 @@ package com.AridRayne.DreamStream;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -13,12 +14,15 @@ import org.mcsoxford.rss.RSSReader;
 
 import android.os.Handler;
 import android.service.dreams.DreamService;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-public class DreamStreamService extends DreamService {
+public class DreamStreamService extends DreamService implements OnGestureListener {
 	ImageView iv;
 //	Queue<String> images = new LinkedList<String>();
 	ArrayList<String> images = new ArrayList<String>();
@@ -26,10 +30,17 @@ public class DreamStreamService extends DreamService {
 	int repeatTime = 5000;
 	Handler imageHandler;
 	int position = 0;
-	Boolean random = false;
+	Boolean random = true;
 	RSSReader reader;
 	RSSFeed feed;
+	GestureDetector gDetector;
 	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		gDetector.onTouchEvent(event);
+		return super.dispatchTouchEvent(event);
+	}
+
 	@Override
 	public void onAttachedToWindow() {
 		super.onAttachedToWindow();
@@ -41,6 +52,7 @@ public class DreamStreamService extends DreamService {
 		Picasso.with(this).setDebugging(true);
 		randomizer = new Random();
 		imageHandler = new Handler();
+		gDetector = new GestureDetector(this);
 		//TODO: Add some code for an initial image?
 	}
 
@@ -69,32 +81,37 @@ public class DreamStreamService extends DreamService {
 				e.printStackTrace();
 			}
 		}
+		if (random)
+			Collections.shuffle(images);
 		imageLoader.run();
 	}
 
 	Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
-			if (random)
-				loadImage(images.get(randomizer.nextInt(images.size())));
-			else {
-				loadImage(images.get(position));
-				DreamStreamService.this.position++;
-				if (DreamStreamService.this.position >= images.size())
-					DreamStreamService.this.position = 0;
-				System.out.println(DreamStreamService.this.position);
-			}
+			loadImage(images.get(position));
 		}
 	};
+	
+	public void incrementPosition() {
+		if (++position >= images.size())
+			position = 0;
+	}
+	
+	public void decrementPosition() {
+		if (--position < 0)
+			position = images.size() - 1;
+	}
 	
 	@Override
 	public void onDreamingStopped() {
 		super.onDreamingStopped();
-		imageHandler.removeCallbacks(imageLoader);
+		imageHandler.removeCallbacksAndMessages(imageLoader);
 	}
 
 	public void loadImage(String imageUrl) {
 		if (imageUrl == null) {
+			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.post(imageLoader);
 			return;
 		}
@@ -118,35 +135,66 @@ public class DreamStreamService extends DreamService {
 
 		@Override
 		public void onSuccess() {
+			incrementPosition();
+			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.postDelayed(imageLoader, repeatTime);
 		}
 
 		@Override
 		public void onError() {
+			incrementPosition();
+			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.post(imageLoader);
 		}
 	}
-	
-//	public class ReadFeed extends AsyncTask<String, Void, RSSFeed> {
-//
-//		@Override
-//		protected RSSFeed doInBackground(String... urls) {
-//			RSSReader reader = new RSSReader();
-//			try {
-//				return reader.load(urls[0]);
-//			} catch (RSSReaderException e) {
-//				e.printStackTrace();
-//			}
-//			return null;
-//		}
-//
-//		@Override
-//		protected void onPostExecute(RSSFeed result) {
-//			feed = result;
-//			for (RSSItem item : result.getItems()) {
-//				images.add(item.getMediaContent().getUrl().toString());
-//			}
-//			super.onPostExecute(result);
-//		}
-//	}
+
+	@Override
+	public boolean onDown(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onFling(MotionEvent start, MotionEvent finish, float xVelocity,
+			float yVelocity) {
+		if (start.getRawX() < finish.getRawX()) {//Swipe left -> right
+			decrementPosition();
+			decrementPosition();
+			System.out.println("swipe left -> right! " + position);
+			imageHandler.removeCallbacksAndMessages(null);
+			imageHandler.post(imageLoader);
+		}
+		else if (start.getRawX() > finish.getRawX()) {//Swipe right -> left
+			System.out.println("swipe right -> left! " + position);
+			imageHandler.removeCallbacksAndMessages(null);
+			imageHandler.post(imageLoader);
+		}
+		return false;
+	}
+
+	@Override
+	public void onLongPress(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
+			float arg3) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void onShowPress(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
