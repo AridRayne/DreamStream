@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.service.wallpaper.WallpaperService;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -43,7 +44,7 @@ public class LiveWallpaperService extends WallpaperService {
 		}
 
 		private int height, width;
-		private int offset = 0;
+		private float offset;
 		private Matrix matrix;
 		private WallpaperTarget target;
 		private boolean isRunning = false;
@@ -60,8 +61,8 @@ public class LiveWallpaperService extends WallpaperService {
 		public void onSurfaceChanged(SurfaceHolder holder, int format,
 				int width, int height) {
 			super.onSurfaceChanged(holder, format, width, height);
-			this.height = height;
-			this.width = width;
+			this.height = getDesiredMinimumHeight();
+			this.width = getDesiredMinimumWidth();
 			matrix.reset();
 			dreamStream.start();
 		}
@@ -75,7 +76,7 @@ public class LiveWallpaperService extends WallpaperService {
 			if (!isRunning)
 				isRunning = true;
 			System.out.println(xOffset + ", " + xOffsetStep + ", " + xPixelOffset);
-			offset = xPixelOffset;
+			this.offset = xPixelOffset;
 			if (this.isVisible())
 				target.draw();
 		}
@@ -111,11 +112,11 @@ public class LiveWallpaperService extends WallpaperService {
 					c = holder.lockCanvas();
 					if (c != null) {
 						c.drawColor(Color.BLACK);
-						int centerX = (width - bitmap.getWidth()) / 2;
-						int centerY = (height - bitmap.getHeight()) / 2;
-//						c.translate(offset, 0.0f);
-//						c.drawBitmap(bitmap, matrix, null);
-						c.drawBitmap(bitmap, offset, centerY, null);
+						RectF imageRect = new RectF(0,0, bitmap.getWidth(), bitmap.getHeight());
+						RectF viewRect = new RectF(0, 0, width, height);
+						matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+						c.translate(offset, 0f);
+						c.drawBitmap(bitmap, matrix, null);
 					}
 				}
 				finally {
