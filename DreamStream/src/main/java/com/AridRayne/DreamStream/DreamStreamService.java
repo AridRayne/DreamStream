@@ -1,15 +1,22 @@
 package com.AridRayne.DreamStream;
 
+import android.graphics.Bitmap;
 import android.service.dreams.DreamService;
 import android.view.MotionEvent;
+import android.widget.ImageView;
+
+import com.AridRayne.DreamStream.DreamStream.ImageTarget;
+import com.squareup.picasso.Picasso.LoadedFrom;
 
 public class DreamStreamService extends DreamService {
 
 	DreamStream dreamStream;
+	ImageView iv;
+	DreamTarget target;
 	
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent event) {
-		return super.dispatchTouchEvent(event) || dreamStream.touchEvent(event);
+		return dreamStream.touchEvent(event) || super.dispatchTouchEvent(event);
 	}
 
 	@Override
@@ -18,8 +25,12 @@ public class DreamStreamService extends DreamService {
 		
 		setInteractive(true);
 		setFullscreen(true);
-		dreamStream = new DreamStream();
-		setContentView(dreamStream.initialize(this));
+		dreamStream = DreamStream.getInstance();
+		dreamStream.initialize(this);
+		target = new DreamTarget();
+		iv = new ImageView(this);
+		setContentView(iv);
+		dreamStream.setTarget(target);
 	}
 
 	@Override
@@ -33,5 +44,14 @@ public class DreamStreamService extends DreamService {
 		super.onDreamingStopped();
 		dreamStream.stop();
 	}
+	
+	class DreamTarget extends ImageTarget {
 
+		@Override
+		public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
+			super.onBitmapLoaded(bitmap, from);
+			iv.setImageBitmap(bitmap);
+		}
+		
+	}
 }

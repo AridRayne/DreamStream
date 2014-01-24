@@ -3,57 +3,75 @@ package com.AridRayne.DreamStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSItem;
 import org.mcsoxford.rss.RSSLoader;
-import org.mcsoxford.rss.RSSReader;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.widget.ImageView;
+import android.view.ScaleGestureDetector.OnScaleGestureListener;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Picasso.LoadedFrom;
+import com.squareup.picasso.Target;
 
-public class DreamStream implements OnGestureListener, OnDoubleTapListener {
-	ImageView iv;
-//	Queue<String> images = new LinkedList<String>();
-	ArrayList<String> images = new ArrayList<String>();
-	Random randomizer;
-	int repeatTime = 5000;
-	Handler imageHandler;
-	int position = 0;
-	Boolean random = true;
-	RSSReader reader;
-	RSSFeed feed;
-	ScaleGestureDetector sgDetector;
-	GestureDetector gDetector;
-	String splashImage = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
-	Boolean showSplash = true;
-	Boolean pause = false;
-	Context context;
+public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnScaleGestureListener {
+//	private ImageView iv;
+	private static ArrayList<String> images = new ArrayList<String>();
+	private static int repeatTime = 5000;
+	private static Handler imageHandler;
+	private static int position = 0;
+	private boolean random = true;
+	private ScaleGestureDetector sgDetector;
+	private GestureDetector gDetector;
+	//TODO: Set this up to get the splash image from preferences.
+	private static String splashImage = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
+	private static boolean showSplash = true;
+	private static boolean pause = false;
+	private static Context context;
+	private boolean isWallpaper = false;
+	private newImageCallback callback;
+	private static ImageTarget target;
+	
+	private static DreamStream instance;
+	
+	private DreamStream() {
+		
+	}
+	
+	public static DreamStream getInstance() {
+		if (instance == null)
+			instance = new DreamStream();
+		return instance;
+	}
 
-	public ImageView initialize(Context context) {
-		this.context = context;
-		iv = new ImageView(context);
+	public void initialize(Context context) {
+		DreamStream.context = context;
+//		iv = new ImageView(context);
+		target = new ImageTarget();
 		gDetector = new GestureDetector(context, this);
-//		sgDetector = new ScaleGestureDetector(context, this);
-//		iv.setScaleType(ImageView.ScaleType.MATRIX);
-//		setContentView(iv);
-		Picasso.with(context).setDebugging(true);
-		randomizer = new Random();
+		sgDetector = new ScaleGestureDetector(context, this);
 		imageHandler = new Handler();
 		//TODO: Add some code for an initial image?
-		return iv;
+	}
+	
+//	public ImageView getImageView() {
+//		return iv;
+//	}
+	
+	public void setTarget(ImageTarget target) {
+		DreamStream.target = target;
 	}
 	
 	public void start() {
@@ -85,10 +103,10 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 	}
 	
 	public void stop() {
-		imageHandler.removeCallbacksAndMessages(imageLoader);
+		imageHandler.removeCallbacksAndMessages(null);
 	}
 	
-	Runnable imageLoader = new Runnable() {
+	static Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
 			if (showSplash) {
@@ -100,7 +118,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 		}
 	};
 	
-	public void incrementPosition() {
+	public static void incrementPosition() {
 		if (++position >= images.size())
 			position = 0;
 	}
@@ -110,7 +128,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 			position = images.size() - 1;
 	}
 	
-	public void loadImage(String imageUrl) {
+	public static void loadImage(String imageUrl) {
 		if (imageUrl == null) {
 			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.post(imageLoader);
@@ -119,17 +137,39 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 		if (imageUrl.startsWith("file|")) {
 			Picasso.with(context)
 			.load(new File(imageUrl))
-//			.centerInside()
-//			.fit()
-			.into(iv, new ImageCallback());
+			.into(target);
 		}
 		else {
 			Picasso.with(context)
 			.load(imageUrl)
-//			.centerInside()
-//			.fit()
-			.into(iv, new ImageCallback());
+			.into(target);
 		}
+	}
+	
+	public static class ImageTarget implements Target {
+
+		@Override
+		public void onBitmapFailed(Drawable errorDrawable) {
+			incrementPosition();
+			imageHandler.removeCallbacksAndMessages(null);
+			imageHandler.post(imageLoader);
+		}
+
+		@Override
+		public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
+			incrementPosition();
+			imageHandler.removeCallbacksAndMessages(null);
+			if (!pause)
+				imageHandler.postDelayed(imageLoader, repeatTime);
+//			iv.setImageBitmap(bitmap);
+		}
+
+		@Override
+		public void onPrepareLoad(Drawable placeHolderDrawable) {
+			// TODO Auto-generated method stub
+			
+		}
+		
 	}
 	
 	public class ImageCallback implements Callback {
@@ -138,8 +178,11 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 		public void onSuccess() {
 			incrementPosition();
 			imageHandler.removeCallbacksAndMessages(null);
-			if (!pause)
+			if (!pause) {
 				imageHandler.postDelayed(imageLoader, repeatTime);
+				if (callback != null)
+					callback.imageLoaded();
+			}
 		}
 
 		@Override
@@ -149,6 +192,41 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 			imageHandler.post(imageLoader);
 		}
 	}
+	
+	public void setImageLoadedCallback(newImageCallback callback) {
+		this.callback = callback;
+	}
+	
+	public void setIsWallpaper(boolean isWallpaper) {
+		this.isWallpaper = isWallpaper;
+	}
+	
+	public interface newImageCallback {
+		void imageLoaded();
+	}
+
+	public boolean touchEvent(MotionEvent event) {
+		boolean retVal = sgDetector.onTouchEvent(event);
+		return gDetector.onTouchEvent(event) || retVal;
+	}
+	
+	public void togglePlayPause() {
+		pause = !pause;
+		if (pause)
+			imageHandler.removeCallbacksAndMessages(null);
+		else
+			imageHandler.post(imageLoader);	
+	}
+	
+	public void pause() {
+		pause = true;
+		imageHandler.removeCallbacksAndMessages(null);
+	}
+	
+	public void play() {
+		pause = false;
+		imageHandler.post(imageLoader);
+	}
 
 	@Override
 	public boolean onDown(MotionEvent arg0) {
@@ -156,16 +234,11 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 		return false;
 	}
 	
-	public boolean touchEvent(MotionEvent event) {
-		Boolean retVal;
-//		Boolean retVal = sgDetector.onTouchEvent(event);
-		retVal = gDetector.onTouchEvent(event);// || retVal;
-		return retVal;
-	}
-
 	@Override
 	public boolean onFling(MotionEvent start, MotionEvent finish, float xVelocity,
 			float yVelocity) {
+		if (isWallpaper)
+			return false;
 		if (start.getRawX() < finish.getRawX()) {//Swipe left -> right
 			decrementPosition();
 			decrementPosition();
@@ -207,11 +280,14 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 
 	@Override
 	public boolean onDoubleTap(MotionEvent e) {
-		pause = !pause;
-		if (pause)
+		if (isWallpaper) {
+			incrementPosition();
 			imageHandler.removeCallbacksAndMessages(null);
-		else
-			imageHandler.post(imageLoader);			
+			imageHandler.post(imageLoader);
+			return true;
+		}
+			
+		togglePlayPause();
 		return true;
 	}
 
@@ -225,6 +301,24 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener {
 	public boolean onSingleTapConfirmed(MotionEvent e) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public boolean onScale(ScaleGestureDetector detector) {
+		if (isWallpaper)
+			return false;
+		pause();
+		
+		return true;
+	}
+
+	@Override
+	public boolean onScaleBegin(ScaleGestureDetector detector) {
+		return true;
+	}
+
+	@Override
+	public void onScaleEnd(ScaleGestureDetector detector) {
 	}
 	
 }

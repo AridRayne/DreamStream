@@ -9,6 +9,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-feature android:required="true" android:name="android.software.live_wallpaper"/>
 
     <application
         android:allowBackup="true"
@@ -28,6 +29,12 @@
             android:name="com.AridRayne.DreamStream.SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
+        <service android:label="DreamStream" android:enabled="true" android:permission="android.permission.BIND_WALLPAPER" android:name="LiveWallpaperService">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService"/>
+            </intent-filter>
+            <meta-data android:resource="@xml/wallpaper" android:name="android.service.wallpaper"/>
+        </service>
     </application>
 
 </manifest>
