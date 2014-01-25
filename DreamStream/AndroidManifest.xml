@@ -5,7 +5,7 @@
     android:versionName="0.0.1-SNAPSHOT" >
 
     <uses-sdk
-        android:minSdkVersion="17"
+        android:minSdkVersion="8"
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -34,7 +34,7 @@
 
         <activity
             android:name="com.AridRayne.DreamStream.SettingsActivity"
-            android:label="@string/title_activity_settings" >
+            android:label="@string/title_activity_settings" android:exported="true">
         </activity>
 
         <service
@@ -63,4 +63,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
