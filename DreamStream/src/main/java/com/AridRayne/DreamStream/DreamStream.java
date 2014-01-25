@@ -38,7 +38,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	private ScaleGestureDetector sgDetector;
 	private GestureDetector gDetector;
 	//TODO: Set this up to get the splash image from preferences.
-	private static String splashImage;// = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
+	private static String splashUri;// = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
 	private static boolean showSplash = true;
 	private static boolean pause = false;
 	private static Context context;
@@ -67,7 +67,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		sgDetector = new ScaleGestureDetector(context, this);
 		imageHandler = new Handler();
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
-		splashImage = preferences.getString("splash_uri", "");
+		splashUri = preferences.getString("splash_uri", "");
 		shuffle = preferences.getBoolean("shuffle", false);
 		//TODO: Add some code for an initial image?
 	}
@@ -116,9 +116,10 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	static Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
-			if (showSplash && !"".equals(splashImage) && splashImage != null) {
+			if (showSplash && splashUri != null) {
 				showSplash = false;
-				loadImage(splashImage);
+				loadImage(splashUri);
+				System.out.println(splashUri);
 			}
 			else
 				loadImage(images.get(position));
