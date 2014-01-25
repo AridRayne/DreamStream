@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.AridRayne.DreamStream"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.AridRayne.DreamStream"
     android:versionCode="1"
-    android:versionName="0.0.1-SNAPSHOT" xmlns:android="http://schemas.android.com/apk/res/android">
+    android:versionName="0.0.1-SNAPSHOT" >
 
     <uses-sdk
         android:minSdkVersion="17"
@@ -9,7 +10,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-feature android:required="true" android:name="android.software.live_wallpaper"/>
+
+    <uses-feature
+        android:name="android.software.live_wallpaper"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -22,19 +26,41 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <meta-data android:resource="@xml/dream_stream" android:name="android.service.dream"/>
+
+            <meta-data
+                android:name="android.service.dream"
+                android:resource="@xml/dream_stream" />
         </service>
 
         <activity
             android:name="com.AridRayne.DreamStream.SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
-        <service android:label="DreamStream" android:enabled="true" android:permission="android.permission.BIND_WALLPAPER" android:name="LiveWallpaperService">
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService"/>
-            </intent-filter>
-            <meta-data android:resource="@xml/wallpaper" android:name="android.service.wallpaper"/>
-        </service>
-    </application>
 
+        <service
+            android:name="com.AridRayne.DreamStream.LiveWallpaperService"
+            android:enabled="true"
+            android:label="DreamStream"
+            android:permission="android.permission.BIND_WALLPAPER" >
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/wallpaper" />
+        </service>
+
+        <activity
+            android:name="com.AridRayne.DreamStream.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_main"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>

@@ -44,7 +44,7 @@ public class LiveWallpaperService extends WallpaperService {
 		}
 
 		private int height, width;
-		private float offset;
+		private float xOffset, yOffset;
 		private Matrix matrix;
 		private WallpaperTarget target;
 		private boolean isRunning = false;
@@ -68,6 +68,13 @@ public class LiveWallpaperService extends WallpaperService {
 		}
 
 		@Override
+		public void onDesiredSizeChanged(int desiredWidth, int desiredHeight) {
+			super.onDesiredSizeChanged(desiredWidth, desiredHeight);
+			this.width = desiredWidth;
+			this.height = desiredHeight;
+		}
+
+		@Override
 		public void onOffsetsChanged(float xOffset, float yOffset,
 				float xOffsetStep, float yOffsetStep, int xPixelOffset,
 				int yPixelOffset) {
@@ -75,8 +82,8 @@ public class LiveWallpaperService extends WallpaperService {
 					xPixelOffset, yPixelOffset);
 			if (!isRunning)
 				isRunning = true;
-			System.out.println(xOffset + ", " + xOffsetStep + ", " + xPixelOffset);
-			this.offset = xPixelOffset;
+			this.xOffset = xPixelOffset;
+			this.yOffset = yPixelOffset;
 			if (this.isVisible())
 				target.draw();
 		}
@@ -115,7 +122,7 @@ public class LiveWallpaperService extends WallpaperService {
 						RectF imageRect = new RectF(0,0, bitmap.getWidth(), bitmap.getHeight());
 						RectF viewRect = new RectF(0, 0, width, height);
 						matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
-						c.translate(offset, 0f);
+						c.translate(xOffset, yOffset);
 						c.drawBitmap(bitmap, matrix, null);
 					}
 				}

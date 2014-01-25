@@ -3,5 +3,6 @@
 
     <string name="app_name">DreamStream</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_main">DreamStream</string>
 
 </resources>

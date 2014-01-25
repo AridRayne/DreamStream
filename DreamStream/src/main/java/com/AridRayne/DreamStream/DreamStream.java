@@ -104,6 +104,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	
 	public void stop() {
 		imageHandler.removeCallbacksAndMessages(null);
+		Picasso.with(context).cancelRequest(target);;
 	}
 	
 	static Runnable imageLoader = new Runnable() {
@@ -308,6 +309,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		if (isWallpaper)
 			return false;
 		pause();
+		System.out.println("scaling");
 		
 		return true;
 	}
