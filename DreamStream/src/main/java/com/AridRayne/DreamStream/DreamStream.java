@@ -11,9 +11,11 @@ import org.mcsoxford.rss.RSSItem;
 import org.mcsoxford.rss.RSSLoader;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
@@ -32,17 +34,18 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	private static int repeatTime = 5000;
 	private static Handler imageHandler;
 	private static int position = 0;
-	private boolean random = true;
+	private boolean shuffle;
 	private ScaleGestureDetector sgDetector;
 	private GestureDetector gDetector;
 	//TODO: Set this up to get the splash image from preferences.
-	private static String splashImage = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
+	private static String splashImage;// = "http://fc01.deviantart.net/fs70/f/2010/291/e/d/please_wait_by_naolito-d311p2z.jpg";
 	private static boolean showSplash = true;
 	private static boolean pause = false;
 	private static Context context;
 	private boolean isWallpaper = false;
 	private newImageCallback callback;
 	private static ImageTarget target;
+	private static SharedPreferences preferences;
 	
 	private static DreamStream instance;
 	
@@ -63,6 +66,9 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		gDetector = new GestureDetector(context, this);
 		sgDetector = new ScaleGestureDetector(context, this);
 		imageHandler = new Handler();
+		preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		splashImage = preferences.getString("splash_uri", "");
+		shuffle = preferences.getBoolean("shuffle", false);
 		//TODO: Add some code for an initial image?
 	}
 	
@@ -98,7 +104,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 				e.printStackTrace();
 			}
 		}
-		if (random)
+		if (shuffle)
 			Collections.shuffle(images);
 	}
 	
@@ -110,7 +116,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	static Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
-			if (showSplash) {
+			if (showSplash && !"".equals(splashImage) && splashImage != null) {
 				showSplash = false;
 				loadImage(splashImage);
 			}
