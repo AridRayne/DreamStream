@@ -27,6 +27,22 @@
 			<artifactId>picasso</artifactId>
 			<version>2.1.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.u1aryz</groupId>
+			<artifactId>android-newpopupmenu-lib</artifactId>
+			<version>1.0.1</version>
+			<type>aar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.nineoldandroids</groupId>
+			<artifactId>library</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.chrisbanes.photoview</groupId>
+			<artifactId>library</artifactId>
+			<version>1.2.2</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

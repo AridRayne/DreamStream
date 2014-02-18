@@ -46,6 +46,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	private newImageCallback callback;
 	private static ImageTarget target;
 	private static SharedPreferences preferences;
+	private DreamPagerAdapter pagerAdapter;
 	
 	private static DreamStream instance;
 	
@@ -69,6 +70,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		splashUri = preferences.getString("splash_uri", "");
 		shuffle = preferences.getBoolean("shuffle", false);
 		imageDelay = (int) (Float.valueOf(preferences.getString("image_delay", "5")) * 1000);
+		pagerAdapter = new DreamPagerAdapter();
 	}
 	
 	public void setTarget(ImageTarget target) {
@@ -104,6 +106,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		}
 		if (shuffle)
 			Collections.shuffle(images);
+		pagerAdapter.setUris(images);
 	}
 	
 	public void stop() {
@@ -257,8 +260,9 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 
 	@Override
 	public void onLongPress(MotionEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("longPress");
+		if (!isWallpaper)
+			togglePlayPause();
 	}
 
 	@Override
@@ -289,9 +293,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 			imageHandler.post(imageLoader);
 			return true;
 		}
-			
-		togglePlayPause();
-		return true;
+		return false;
 	}
 
 	@Override
@@ -308,11 +310,6 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 
 	@Override
 	public boolean onScale(ScaleGestureDetector detector) {
-		if (isWallpaper)
-			return false;
-		pause();
-		System.out.println("scaling");
-		
 		return true;
 	}
 
@@ -323,6 +320,10 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 
 	@Override
 	public void onScaleEnd(ScaleGestureDetector detector) {
+		if (isWallpaper)
+			return;
+		pause();
+		System.out.println("scaling");
 	}
-	
+
 }

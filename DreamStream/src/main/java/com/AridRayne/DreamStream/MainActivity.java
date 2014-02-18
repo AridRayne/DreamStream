@@ -17,14 +17,15 @@ public class MainActivity extends Activity {
 	ImageView iv;
 	DreamStream dreamStream;
 	AppTarget target;
+//	JazzyViewPager viewPager;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         iv = new ImageView(this);
-        setContentView(iv);
         dreamStream = DreamStream.getInstance();
         dreamStream.initialize(this);
+        setContentView(R.layout.viewpager_layout);
         target = new AppTarget();
         dreamStream.setTarget(target);
         dreamStream.start();
@@ -53,8 +54,7 @@ public class MainActivity extends Activity {
     
     @Override
 	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
-		return dreamStream.touchEvent(event) || super.onTouchEvent(event);
+    	return dreamStream.touchEvent(event) || super.onTouchEvent(event);
 	}
 
 	public class AppTarget extends ImageTarget {
