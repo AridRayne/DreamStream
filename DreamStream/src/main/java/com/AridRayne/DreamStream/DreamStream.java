@@ -31,7 +31,7 @@ import com.squareup.picasso.Target;
 public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnScaleGestureListener {
 //	private ImageView iv;
 	private static ArrayList<String> images = new ArrayList<String>();
-	private static int repeatTime = 5000;
+	private static int imageDelay;
 	private static Handler imageHandler;
 	private static int position = 0;
 	private boolean shuffle;
@@ -61,7 +61,6 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 
 	public void initialize(Context context) {
 		DreamStream.context = context;
-//		iv = new ImageView(context);
 		target = new ImageTarget();
 		gDetector = new GestureDetector(context, this);
 		sgDetector = new ScaleGestureDetector(context, this);
@@ -69,19 +68,18 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		splashUri = preferences.getString("splash_uri", "");
 		shuffle = preferences.getBoolean("shuffle", false);
-		//TODO: Add some code for an initial image?
+		imageDelay = (int) (Float.valueOf(preferences.getString("image_delay", "5")) * 1000);
 	}
-	
-//	public ImageView getImageView() {
-//		return iv;
-//	}
 	
 	public void setTarget(ImageTarget target) {
 		DreamStream.target = target;
 	}
 	
 	public void start() {
-		imageLoader.run();
+		if (showSplash && splashUri != null)
+			loadSplash();
+		else
+			imageLoader.run();
 		RSSLoader loader = RSSLoader.fifo();
 		Future<RSSFeed> future;
 		RSSFeed feed;
@@ -113,15 +111,13 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		Picasso.with(context).cancelRequest(target);;
 	}
 	
+	public void loadSplash() {
+		loadImage(splashUri);
+	}
+	
 	static Runnable imageLoader = new Runnable() {
 		@Override
 		public void run() {
-			if (showSplash && splashUri != null) {
-				showSplash = false;
-				loadImage(splashUri);
-				System.out.println(splashUri);
-			}
-			else
 				loadImage(images.get(position));
 		}
 	};
@@ -168,8 +164,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 			incrementPosition();
 			imageHandler.removeCallbacksAndMessages(null);
 			if (!pause)
-				imageHandler.postDelayed(imageLoader, repeatTime);
-//			iv.setImageBitmap(bitmap);
+				imageHandler.postDelayed(imageLoader, imageDelay);
 		}
 
 		@Override
@@ -187,7 +182,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 			incrementPosition();
 			imageHandler.removeCallbacksAndMessages(null);
 			if (!pause) {
-				imageHandler.postDelayed(imageLoader, repeatTime);
+				imageHandler.postDelayed(imageLoader, imageDelay);
 				if (callback != null)
 					callback.imageLoaded();
 			}

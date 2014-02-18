@@ -58,5 +58,7 @@
     <string name="pref_title_shuffle">Shuffle</string>
     <string name="pref_title_splash_uri">Splash Image</string>
     <string name="pref_description_splash_uri">Location of the splash image</string>
+    <string name="pref_title_image_delay">Image Delay</string>
+    <string name="pref_description_image_delay">Number of seconds to wait between images</string>
 
 </resources>
