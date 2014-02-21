@@ -46,14 +46,14 @@ public class LiveWallpaperService extends WallpaperService {
 		private int height, width;
 		private float xOffset, yOffset;
 		private Matrix matrix;
-		private WallpaperTarget target;
+//		private WallpaperTarget target;
 		private boolean isRunning = false;
 		
 		@Override
 		public void onCreate(SurfaceHolder surfaceHolder) {
 			super.onCreate(surfaceHolder);
-			target = new WallpaperTarget();
-			dreamStream.setTarget(target);
+//			target = new WallpaperTarget();
+//			dreamStream.setTarget(target);
 			matrix = new Matrix();
 		}
 
@@ -65,73 +65,77 @@ public class LiveWallpaperService extends WallpaperService {
 			this.width = getDesiredMinimumWidth();
 			matrix.reset();
 			dreamStream.start();
+			Canvas canvas = holder.lockCanvas();
+			dreamStream.getViewPager().layout(0, 0, width, height);
+			dreamStream.getViewPager().draw(canvas);
+			holder.unlockCanvasAndPost(canvas);
 		}
 
-		@Override
-		public void onDesiredSizeChanged(int desiredWidth, int desiredHeight) {
-			super.onDesiredSizeChanged(desiredWidth, desiredHeight);
-			this.width = desiredWidth;
-			this.height = desiredHeight;
-		}
-
-		@Override
-		public void onOffsetsChanged(float xOffset, float yOffset,
-				float xOffsetStep, float yOffsetStep, int xPixelOffset,
-				int yPixelOffset) {
-			super.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
-					xPixelOffset, yPixelOffset);
-			if (!isRunning)
-				isRunning = true;
-			this.xOffset = xPixelOffset;
-			this.yOffset = yPixelOffset;
-			if (this.isVisible())
-				target.draw();
-		}
-
-		@Override
-		public void onVisibilityChanged(boolean visible) {
-			super.onVisibilityChanged(visible);
-			if (visible && isRunning) {
-				dreamStream.start();
-			}
-			else
-				dreamStream.stop();
-		}
-
-		public class WallpaperTarget extends ImageTarget {
-
-			Bitmap bitmap;
-			
-			@Override
-			public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
-				super.onBitmapLoaded(bitmap, from);
-				this.bitmap = bitmap;
-				draw();
-			}
-			
-			public void draw() {
-				if (this.bitmap == null)
-					return;
-				final SurfaceHolder holder = getSurfaceHolder();
-				Canvas c = null;
-				
-				try {
-					c = holder.lockCanvas();
-					if (c != null) {
-						c.drawColor(Color.BLACK);
-						RectF imageRect = new RectF(0,0, bitmap.getWidth(), bitmap.getHeight());
-						RectF viewRect = new RectF(0, 0, width, height);
-						matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
-						c.translate(xOffset, yOffset);
-						c.drawBitmap(bitmap, matrix, null);
-					}
-				}
-				finally {
-					if (c != null)
-						holder.unlockCanvasAndPost(c);
-				}				
-			}
-		}
+//		@Override
+//		public void onDesiredSizeChanged(int desiredWidth, int desiredHeight) {
+//			super.onDesiredSizeChanged(desiredWidth, desiredHeight);
+//			this.width = desiredWidth;
+//			this.height = desiredHeight;
+//		}
+//
+//		@Override
+//		public void onOffsetsChanged(float xOffset, float yOffset,
+//				float xOffsetStep, float yOffsetStep, int xPixelOffset,
+//				int yPixelOffset) {
+//			super.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
+//					xPixelOffset, yPixelOffset);
+//			if (!isRunning)
+//				isRunning = true;
+//			this.xOffset = xPixelOffset;
+//			this.yOffset = yPixelOffset;
+//			if (this.isVisible())
+//				target.draw();
+//		}
+//
+//		@Override
+//		public void onVisibilityChanged(boolean visible) {
+//			super.onVisibilityChanged(visible);
+//			if (visible && isRunning) {
+//				dreamStream.start();
+//			}
+//			else
+//				dreamStream.stop();
+//		}
+//
+//		public class WallpaperTarget extends ImageTarget {
+//
+//			Bitmap bitmap;
+//			
+//			@Override
+//			public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
+//				super.onBitmapLoaded(bitmap, from);
+//				this.bitmap = bitmap;
+//				draw();
+//			}
+//			
+//			public void draw() {
+//				if (this.bitmap == null)
+//					return;
+//				final SurfaceHolder holder = getSurfaceHolder();
+//				Canvas c = null;
+//				
+//				try {
+//					c = holder.lockCanvas();
+//					if (c != null) {
+//						c.drawColor(Color.BLACK);
+//						RectF imageRect = new RectF(0,0, bitmap.getWidth(), bitmap.getHeight());
+//						RectF viewRect = new RectF(0, 0, width, height);
+//						matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.CENTER);
+//						c.translate(xOffset, yOffset);
+//						c.drawBitmap(bitmap, matrix, null);
+//					}
+//				}
+//				finally {
+//					if (c != null)
+//						holder.unlockCanvasAndPost(c);
+//				}				
+//			}
+//		}
 
 	}
 

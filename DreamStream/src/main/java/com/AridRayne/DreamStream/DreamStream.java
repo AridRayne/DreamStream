@@ -3,6 +3,7 @@ package com.AridRayne.DreamStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -16,23 +17,30 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
+import android.view.View;
+import android.view.View.OnLongClickListener;
 
+import com.jfeinstein.jazzyviewpager.JazzyViewPager;
+import com.jfeinstein.jazzyviewpager.JazzyViewPager.TransitionEffect;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 
-public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnScaleGestureListener {
+public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnScaleGestureListener, OnLongClickListener, OnPageChangeListener {
 //	private ImageView iv;
 	private static ArrayList<String> images = new ArrayList<String>();
 	private static int imageDelay;
 	private static Handler imageHandler;
+	private static Handler pageHandler;
 	private static int position = 0;
 	private boolean shuffle;
 	private ScaleGestureDetector sgDetector;
@@ -46,7 +54,9 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	private newImageCallback callback;
 	private static ImageTarget target;
 	private static SharedPreferences preferences;
-	private DreamPagerAdapter pagerAdapter;
+	private static DreamPagerAdapter pagerAdapter;
+	private static JazzyViewPager viewPager;
+	private static Random random;
 	
 	private static DreamStream instance;
 	
@@ -54,6 +64,14 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		
 	}
 	
+//	public DreamPagerAdapter getPagerAdapter() {
+//		return pagerAdapter;
+//	}
+	
+	public JazzyViewPager getViewPager() {
+		return viewPager;
+	}
+
 	public static DreamStream getInstance() {
 		if (instance == null)
 			instance = new DreamStream();
@@ -66,11 +84,21 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		gDetector = new GestureDetector(context, this);
 		sgDetector = new ScaleGestureDetector(context, this);
 		imageHandler = new Handler();
+		pageHandler = new Handler();
 		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		splashUri = preferences.getString("splash_uri", "");
 		shuffle = preferences.getBoolean("shuffle", false);
 		imageDelay = (int) (Float.valueOf(preferences.getString("image_delay", "5")) * 1000);
+		viewPager = new JazzyViewPager(context);
 		pagerAdapter = new DreamPagerAdapter();
+		pagerAdapter.setViewPager(viewPager);
+		pagerAdapter.setContext(context);
+		viewPager.setAdapter(pagerAdapter);
+		random = new Random();
+		viewPager.setOnPageChangeListener(this);
+		pageHandler.removeCallbacksAndMessages(null);
+		pageHandler.postDelayed(nextPage, imageDelay);
+//		viewPager.setOnLongClickListener(this);
 	}
 	
 	public void setTarget(ImageTarget target) {
@@ -78,10 +106,10 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	}
 	
 	public void start() {
-		if (showSplash && splashUri != null)
-			loadSplash();
-		else
-			imageLoader.run();
+//		if (showSplash && splashUri != null)
+//			loadSplash();
+//		else
+//			imageLoader.run();
 		RSSLoader loader = RSSLoader.fifo();
 		Future<RSSFeed> future;
 		RSSFeed feed;
@@ -106,7 +134,10 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 		}
 		if (shuffle)
 			Collections.shuffle(images);
+		if (showSplash && !splashUri.isEmpty())
+			images.add(0, splashUri);
 		pagerAdapter.setUris(images);
+		pageHandler.postDelayed(nextPage, imageDelay);
 	}
 	
 	public void stop() {
@@ -117,6 +148,18 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	public void loadSplash() {
 		loadImage(splashUri);
 	}
+	
+	static Runnable nextPage = new Runnable() {
+		@Override
+		public void run() {
+			int pageNum = viewPager.getCurrentItem() + 1;
+			if (pageNum >= pagerAdapter.getCount())
+				pageNum = 0;
+			viewPager.setCurrentItem(pageNum, true);
+//			pageHandler.removeCallbacksAndMessages(null);
+//			pageHandler.postDelayed(nextPage, imageDelay);
+		}
+	};
 	
 	static Runnable imageLoader = new Runnable() {
 		@Override
@@ -136,7 +179,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 	}
 	
 	public static void loadImage(String imageUrl) {
-		if (imageUrl == null) {
+		if (imageUrl == null || imageUrl.isEmpty()) {
 			imageHandler.removeCallbacksAndMessages(null);
 			imageHandler.post(imageLoader);
 			return;
@@ -324,6 +367,39 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnSc
 			return;
 		pause();
 		System.out.println("scaling");
+	}
+
+	@Override
+	public boolean onLongClick(View v) {
+		System.out.println("DreamStream.onLongClick()");
+		return false;
+	}
+
+	@Override
+	public void onPageScrollStateChanged(int state) {
+		// TODO Auto-generated method stub
+		System.out.println("DreamStream.onPageScrollStateChanged() ");
+		pageHandler.removeCallbacksAndMessages(null);
+		if (state == ViewPager.SCROLL_STATE_IDLE) {
+//			viewPager.setTransitionEffect(TransitionEffect.values()[random.nextInt(TransitionEffect.values().length)]);
+			pageHandler.postDelayed(nextPage, imageDelay);
+		}
+	}
+
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+		// TODO Auto-generated method stub
+//		pageHandler.removeCallbacksAndMessages(null);
+//		pageHandler.postDelayed(nextPage, imageDelay);
+//		System.out.println("DreamStream.onPageScrolled()");
+	}
+
+	@Override
+	public void onPageSelected(int arg0) {
+		System.out.println("DreamStream.onPageSelected()");
+//		viewPager.setTransitionEffect(TransitionEffect.values()[random.nextInt(TransitionEffect.values().length)]);
+//		pageHandler.removeCallbacksAndMessages(null);
+//		pageHandler.postDelayed(nextPage, imageDelay);
 	}
 
 }

@@ -1,12 +1,13 @@
 package com.AridRayne.DreamStream;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.AridRayne.DreamStream.DreamStream.ImageTarget;
@@ -19,15 +20,22 @@ public class MainActivity extends Activity {
 	AppTarget target;
 //	JazzyViewPager viewPager;
 	
-    @Override
+    @SuppressLint("NewApi")
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN);
         iv = new ImageView(this);
         dreamStream = DreamStream.getInstance();
         dreamStream.initialize(this);
-        setContentView(R.layout.viewpager_layout);
-        target = new AppTarget();
-        dreamStream.setTarget(target);
+//        TextView tv = new TextView(this);
+//        tv.setText("TEST");
+//        setContentView(tv);
+        setContentView(dreamStream.getViewPager());
+//        JazzyViewPager jvp = (JazzyViewPager) findViewById(R.id.ViewPager);
+//        jvp.setAdapter(dreamStream.getPagerAdapter());
+//        target = new AppTarget();
+//        dreamStream.setTarget(target);
         dreamStream.start();
     }
     
@@ -52,10 +60,10 @@ public class MainActivity extends Activity {
         return true;
     }
     
-    @Override
-	public boolean onTouchEvent(MotionEvent event) {
-    	return dreamStream.touchEvent(event) || super.onTouchEvent(event);
-	}
+//    @Override
+//	public boolean onTouchEvent(MotionEvent event) {
+//    	return dreamStream.touchEvent(event) || super.onTouchEvent(event);
+//	}
 
 	public class AppTarget extends ImageTarget {
 

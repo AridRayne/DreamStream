@@ -14,12 +14,12 @@ public class DreamStreamService extends DreamService {
 
 	DreamStream dreamStream;
 	ImageView iv;
-	DreamTarget target;
+//	DreamTarget target;
 	
-	@Override
-	public boolean dispatchTouchEvent(MotionEvent event) {
-		return dreamStream.touchEvent(event) || super.dispatchTouchEvent(event);
-	}
+//	@Override
+//	public boolean dispatchTouchEvent(MotionEvent event) {
+//		return dreamStream.touchEvent(event) || super.dispatchTouchEvent(event);
+//	}
 
 	@Override
 	public void onAttachedToWindow() {
@@ -29,12 +29,13 @@ public class DreamStreamService extends DreamService {
 		setFullscreen(true);
 		dreamStream = DreamStream.getInstance();
 		dreamStream.initialize(this);
-		target = new DreamTarget();
-		iv = new ImageView(this);
+//		target = new DreamTarget();
+//		iv = new ImageView(this);
 //		pv = new PhotoView(this);
 //		dpv = new DreamPhotoView(this, dreamStream);
-		setContentView(iv);
-		dreamStream.setTarget(target);
+//		setContentView(iv);
+//		dreamStream.setTarget(target);
+		setContentView(dreamStream.getViewPager());
 	}
 
 	@Override
@@ -48,14 +49,14 @@ public class DreamStreamService extends DreamService {
 		super.onDreamingStopped();
 		dreamStream.stop();
 	}
-	
-	class DreamTarget extends ImageTarget {
-
-		@Override
-		public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
-			super.onBitmapLoaded(bitmap, from);
-			iv.setImageBitmap(bitmap);
-		}
-		
-	}
+//	
+//	class DreamTarget extends ImageTarget {
+//
+//		@Override
+//		public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
+//			super.onBitmapLoaded(bitmap, from);
+//			iv.setImageBitmap(bitmap);
+//		}
+//		
+//	}
 }
