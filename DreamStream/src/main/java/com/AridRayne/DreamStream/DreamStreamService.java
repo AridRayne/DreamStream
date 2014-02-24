@@ -1,13 +1,8 @@
 package com.AridRayne.DreamStream;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.service.dreams.DreamService;
-import android.view.MotionEvent;
 import android.widget.ImageView;
-
-import com.AridRayne.DreamStream.DreamStream.ImageTarget;
-import com.squareup.picasso.Picasso.LoadedFrom;
 
 @SuppressLint("NewApi")
 public class DreamStreamService extends DreamService {

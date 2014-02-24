@@ -18,7 +18,6 @@ public class MainActivity extends Activity {
 	ImageView iv;
 	DreamStream dreamStream;
 	AppTarget target;
-//	JazzyViewPager viewPager;
 	
     @SuppressLint("NewApi")
 	@Override
@@ -28,14 +27,7 @@ public class MainActivity extends Activity {
         iv = new ImageView(this);
         dreamStream = DreamStream.getInstance();
         dreamStream.initialize(this);
-//        TextView tv = new TextView(this);
-//        tv.setText("TEST");
-//        setContentView(tv);
         setContentView(dreamStream.getViewPager());
-//        JazzyViewPager jvp = (JazzyViewPager) findViewById(R.id.ViewPager);
-//        jvp.setAdapter(dreamStream.getPagerAdapter());
-//        target = new AppTarget();
-//        dreamStream.setTarget(target);
         dreamStream.start();
     }
     
@@ -60,11 +52,6 @@ public class MainActivity extends Activity {
         return true;
     }
     
-//    @Override
-//	public boolean onTouchEvent(MotionEvent event) {
-//    	return dreamStream.touchEvent(event) || super.onTouchEvent(event);
-//	}
-
 	public class AppTarget extends ImageTarget {
 
 		@Override

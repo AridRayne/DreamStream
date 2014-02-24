@@ -29,7 +29,6 @@ public class DreamPagerAdapter extends PagerAdapter {
 
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
 		if (uris == null)
 			return 0;
 		return uris.size();
@@ -56,11 +55,7 @@ public class DreamPagerAdapter extends PagerAdapter {
 	public Object instantiateItem(ViewGroup container, int position) {
 		//Load an instance of the view containing the PhotoView and information bars to be added to the viewpager.
 		View view = View.inflate(context, R.layout.view_layout, null);
-//		TextView view = new TextView(context);
-//		view.setText("TEST");
 		container.addView(view, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//		((JazzyViewPager) container).addView(view);
-//		container.addView(view);
 		PhotoView pv = (PhotoView) view.findViewById(R.id.PhotoView);
 		pv.setOnLongClickListener(DreamStream.getInstance());
 		Picasso.with(context)
