@@ -4,6 +4,7 @@
     <string name="app_name">DreamStream</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">DreamStream</string>
+
     <string-array name="jazzy_effects">
         <item>Standard</item>
         <item>Tablet</item>
@@ -18,5 +19,8 @@
         <item>RotateDown</item>
         <item>Accordion</item>
     </string-array>
-    
+
+    <string name="title_activity_image_sources">ImageSources</string>
+    <string name="title_add_button">Add Image Source</string>
+
 </resources>

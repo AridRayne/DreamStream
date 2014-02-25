@@ -15,7 +15,11 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.GestureDetector;
@@ -24,14 +28,16 @@ import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
+import android.webkit.WebView.FindListener;
 
 import com.jfeinstein.jazzyviewpager.JazzyViewPager;
+import com.jfeinstein.jazzyviewpager.JazzyViewPager.TransitionEffect;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 
-public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnLongClickListener, OnPageChangeListener {
+public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnLongClickListener, OnPageChangeListener, OnPreferenceChangeListener {
 //	private ImageView iv;
 	private static ArrayList<String> images = new ArrayList<String>();
 	private static int imageDelay;
@@ -67,7 +73,7 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnLo
 			instance = new DreamStream();
 		return instance;
 	}
-
+	
 	public void initialize(Context context) {
 		DreamStream.context = context;
 		target = new ImageTarget();
@@ -80,6 +86,8 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnLo
 		shuffle = preferences.getBoolean("shuffle", false);
 		imageDelay = (int) (Float.valueOf(preferences.getString("image_delay", "5")) * 1000);
 		viewPager = new JazzyViewPager(context);
+		TransitionEffect effect = TransitionEffect.valueOf(preferences.getString("jazzy_effect", "Standard"));
+		viewPager.setTransitionEffect(effect);
 		pagerAdapter = new DreamPagerAdapter();
 		pagerAdapter.setViewPager(viewPager);
 		pagerAdapter.setContext(context);
@@ -338,24 +346,6 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnLo
 		return false;
 	}
 
-//	@Override
-//	public boolean onScale(ScaleGestureDetector detector) {
-//		return true;
-//	}
-//
-//	@Override
-//	public boolean onScaleBegin(ScaleGestureDetector detector) {
-//		return true;
-//	}
-//
-//	@Override
-//	public void onScaleEnd(ScaleGestureDetector detector) {
-//		if (isWallpaper)
-//			return;
-//		pause();
-//		System.out.println("scaling");
-//	}
-
 	@Override
 	public boolean onLongClick(View v) {
 		System.out.println("DreamStream.onLongClick()");
@@ -385,6 +375,31 @@ public class DreamStream implements OnGestureListener, OnDoubleTapListener, OnLo
 
 	@Override
 	public void onPageSelected(int arg0) {
+	}
+
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		if (preference.getKey().equals("image_delay")) {
+			imageDelay = (Integer) newValue * 1000;
+			preference.setSummary((String) newValue);
+		}
+		else if (preference.getKey().equals("shuffle")) {
+			shuffle = (Boolean) newValue;
+			if (shuffle)
+				pagerAdapter.shuffleUris();
+		}
+		else if (preference.getKey().equals("jazzy_effect")) {
+			TransitionEffect effect = TransitionEffect.valueOf((String) newValue);
+			viewPager.setTransitionEffect(effect);
+			ListPreference listPreference = (ListPreference) preference;
+			int index = listPreference.findIndexOfValue((String) newValue);
+
+			// Set the summary to reflect the new value.
+			preference
+					.setSummary(index >= 0 ? listPreference.getEntries()[index]
+							: null);
+		}
+		return true;
 	}
 
 }

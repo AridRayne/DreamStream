@@ -1,7 +1,9 @@
 package com.AridRayne.DreamStream;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -9,14 +11,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
+import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,7 +36,7 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements OnPreferenceClickListener {
 	/**
 	 * Determines whether to always show the simplified settings UI, where
 	 * settings are presented in a single list. When false, settings are shown
@@ -63,7 +69,16 @@ public class SettingsActivity extends PreferenceActivity {
 //		addPreferencesFromResource(R.xml.pref_general);
 		// Add DreamStream preferences.
 		addPreferencesFromResource(R.xml.pref_dreamstream);
+		findPreference("image_delay").setOnPreferenceChangeListener(DreamStream.getInstance());
+		findPreference("shuffle").setOnPreferenceChangeListener(DreamStream.getInstance());
+		findPreference("jazzy_effect").setOnPreferenceChangeListener(DreamStream.getInstance());
+		findPreference("edit_image_sources").setOnPreferenceClickListener(this);
 
+//		PreferenceCategory fakeHeader = new PreferenceCategory(this);
+//		fakeHeader.setTitle(R.string.pref_header_image_sources);
+//		getPreferenceScreen().addPreference(fakeHeader);
+//		addPreferencesFromResource(R.xml.pref_image_sources);
+//		findPreference("add_image_source").setOnPreferenceClickListener(this);
 		// Add 'notifications' preferences, and a corresponding header.
 //		PreferenceCategory fakeHeader = new PreferenceCategory(this);
 //		fakeHeader.setTitle(R.string.pref_header_notifications);
@@ -129,7 +144,7 @@ public class SettingsActivity extends PreferenceActivity {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
 			String stringValue = value.toString();
-
+			
 			if (preference instanceof ListPreference) {
 				// For list preferences, look up the correct display value in
 				// the preference's 'entries' list.
@@ -253,5 +268,24 @@ public class SettingsActivity extends PreferenceActivity {
 			// guidelines.
 			bindPreferenceSummaryToValue(findPreference("sync_frequency"));
 		}
+	}
+
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		if (preference.getKey().equals("edit_image_sources")) {
+			Intent intent = new Intent(this, ImageSourcesActivity.class);
+			startActivity(intent);
+//			MultiSelectListPreference mlp = (MultiSelectListPreference) findPreference("image_sources");
+//			ArrayList<CharSequence> entries, entryValues;
+//			entries = (ArrayList<CharSequence>) Arrays.asList(mlp.getEntries());
+//			entryValues = (ArrayList<CharSequence>) Arrays.asList(mlp.getEntryValues());
+//			entries.add("TEST");
+//			entryValues.add("TEST!");
+//			mlp.setEntries((CharSequence[]) entries.toArray());
+//			mlp.setEntryValues((CharSequence[]) entryValues.toArray());
+			return true;
+		}
+
+		return false;
 	}
 }

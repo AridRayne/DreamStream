@@ -1,6 +1,7 @@
 package com.AridRayne.DreamStream;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import uk.co.senab.photoview.PhotoView;
 import android.content.Context;
@@ -49,6 +50,10 @@ public class DreamPagerAdapter extends PagerAdapter {
 	public void setUris(ArrayList<String> uris) {
 		this.uris = uris;
 		this.notifyDataSetChanged();
+	}
+	
+	public void shuffleUris() {
+		Collections.shuffle(uris);
 	}
 
 	@Override
